@@ -1,0 +1,16 @@
+flow,flow_unit,amount_per_FU,stage,process_name,process_unit,source,uncertainty_low,uncertainty_high,comment
+# Numeric defaults for Lagos case study (functional unit = 1 L consumed at point of use)
+# Notes: sachet assumed 500 mL size (so 2 sachets per FU); PET bottle assumed 500 mL bottle (2 bottles per FU)
+packaging_mass_g,g,6,packaging,Sachet manufacture,g,literature/default,0.8,1.2,Total polymer mass per FU (2 x ~3 g sachets)
+packaging_mass_g,g,24,packaging,PET bottle manufacture,g,literature/default,0.8,1.2,Total PET mass per FU (2 x ~12 g bottles)
+filling_water,L,1.0,filling,Sachet/PET filling,L,literature/default,1.0,1.0,Volume of water filled per FU
+energy_filling_kWh,kWh,0.02,filling,Filling operations,kWh,literature/default,0.01,0.05,Electricity used per L for filling/processing
+transport_km,km,40,transport,Transport to retail,km,literature/default,5,200,Average truck distance from plant to retail (roundtrip equivalent)
+waste_management_share_recycling,frac,0.05,eol,Sachet end-of-life,recycling_frac,literature/default,0.01,0.15,Share of sachet packaging collected & recycled
+waste_management_share_landfill,frac,0.20,eol,Sachet end-of-life,landfill_frac,literature/default,0.05,0.5,Share of sachet packaging to landfill/dumpsite
+waste_management_share_open_burn,frac,0.75,eol,Sachet end-of-life,open_burn_frac,literature/default,0.3,0.9,Share of sachet packaging openly burned or littered (mismanaged)
+
+# PET-specific end-of-life defaults (override where process-specific modelling used)
+pet_recycling_share,frac,0.15,eol,PET end-of-life,recycling_frac,literature/default,0.05,0.4,Share of PET bottles recycled
+pet_landfill_share,frac,0.35,eol,PET end-of-life,landfill_frac,literature/default,0.2,0.6,Share of PET bottles to landfill/dumpsite
+pet_open_burn_share,frac,0.50,eol,PET end-of-life,open_burn_frac,literature/default,0.1,0.7,Share of PET bottles openly burned or mismanaged

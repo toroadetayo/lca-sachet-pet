@@ -1,0 +1,12 @@
+process_name,process_type,flow_name,flow_unit,amount,exchange_type,linked_process_id,reference,uncertainty_low,uncertainty_high,comment
+Sachet manufacture,process,polyethylene film,g,6,input,,literature/default,0.8,1.2,Total polymer mass per FU (2x ~3g sachets)
+PET bottle manufacture,process,polyethylene terephthalate,g,24,input,,literature/default,0.8,1.2,Total PET mass per FU (2x ~12g bottles)
+Water filling,process,clean water,L,1.0,input,,literature/default,1.0,1.0,Volume filled per FU
+Filling electricity,process,electricity,kWh,0.02,input,,literature/default,0.01,0.05,Electricity consumption per L filled
+Transport to retail,process,truck transport,tkm,0.04,input,,literature/default,0.5,2.0,Transport tkm per FU (assumes packaging mass carried)
+Sachet end-of-life - recycled,process,sachet recycled,g,0.30,input,,literature/default,0.01,0.15,Mass recycled per FU (g)
+Sachet end-of-life - landfill,process,sachet landfill,g,1.20,input,,literature/default,0.05,0.5,Mass to landfill per FU (g)
+Sachet end-of-life - open burn,process,sachet open burn,g,4.50,input,,literature/default,0.3,0.9,Mass openly burned/mismanaged per FU (g)
+PET end-of-life - recycled,process,pet recycled,g,3.60,input,,literature/default,0.05,0.4,Mass recycled per FU (g)
+PET end-of-life - landfill,process,pet landfill,g,8.40,input,,literature/default,0.2,0.6,Mass to landfill per FU (g)
+PET end-of-life - open burn,process,pet open burn,g,12.00,input,,literature/default,0.1,0.7,Mass openly burned/mismanaged per FU (g)

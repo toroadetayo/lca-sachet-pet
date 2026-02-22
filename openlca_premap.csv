@@ -1,0 +1,13 @@
+flow_name,flow_unit,amount,recommended_search_string,nexus_dataset,recommended_process_name,nexus_process_id_placeholder,notes
+polyethylene film,g,6,"polyethylene film production" ,ELCD,"Polyethylene film production, packaging grade","<paste nexus id>",Look for PE film or low-density polyethylene (LDPE) film processes
+polyethylene terephthalate,g,24,"polyethylene terephthalate (PET) granulate production",ELCD,"PET granulate production","<paste nexus id>",Or use PET bottle production process if available (adjust mass)
+clean water,L,1.0,"tap water, average, supply" ,ELCD,"Water, treated, distribution to tap","<paste nexus id>",If no Nigeria grid, use regional proxy and document
+electricity,kWh,0.02,"electricity, grid mix, Nigeria OR West Africa proxy",ELCD,"Electricity, medium voltage, consumption, country proxy","<paste nexus id>",Use closest country or regional grid mix available
+truck transport,tkm,0.04,"transport, freight, road, lorry 16-32 t" ,ELCD,"Transport, freight, lorry >16t, EUROPE/GENERIC","<paste nexus id>",Convert mass (kg→t) and multiply by km to get tkm; adjust if Nigeria-specific transport exists
+disposal landfill,g,1.20,"disposal, landfill" ,ELCD,"Disposal, landfill, municipal waste","<paste nexus id>",Choose unmanaged/controlled landfill depending on LAWMA context
+open burn,g,4.50,"open burning of waste" ,ELCD,"Open burning of waste (uncontrolled)","<paste nexus id>",Open-burning processes have high uncertainty; document assumptions
+recycling_pe,g,0.30,"recycling, polyethylene film recycling" ,ELCD,"Recycling, polyethylene film - recycling process","<paste nexus id>",If closed-loop recycling process unavailable, model avoided burden conservatively
+recycling_pet,g,3.60,"recycling, polyethylene terephthalate recycling" ,ELCD,"Recycling, polyethylene terephthalate - beverage bottles","<paste nexus id>",Use beverage-bottle recycling process and material recovery rates
+plastic printing inks,g,0.05,"inks printing on plastic" ,ELCD,"Printing inks, packaging","<paste nexus id>",Include if significant (small mass but may contain additives)
+blowing/moulding,kWh,0.005,"blow moulding PET bottle" ,ELCD,"Blow moulding, PET bottle production","<paste nexus id>",Energy per bottle (convert to per FU)
+water_treatment_kWh,kWh,0.001,"water treatment, small-scale / municipal" ,ELCD,"Water treatment, conventional, per m3","<paste nexus id>",Scale to per L (divide by 1000)
