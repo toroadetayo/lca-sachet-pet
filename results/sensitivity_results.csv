@@ -1,0 +1,5 @@
+scenario,product,total_kgCO2e_per_L,notes
+baseline,Sachet,0.04246,"baseline fate shares: recycling 5%, landfill 20%, open burn 75%"
+baseline,PET,0.08970,"baseline fate shares: recycling 15%, landfill 35%, open burn 50%"
+PET_high_recycling,PET,0.05550,"50% recycling scenario (recycling credit reduces packaging burden)"
+Sachet_high_openburn,Sachet,0.04627,"95% open burning scenario (higher EoL emissions)"

@@ -1,0 +1,7 @@
+metric,product,mean,std,5th_pct,95th_pct,units
+GWP, SACHET,0.04641,0.00893,0.03172,0.06110,kg CO2-eq / L
+GWP, PET,0.08629,0.01646,0.05922,0.11336,kg CO2-eq / L
+Water depletion, SACHET,0.01240,0.00132,0.01024,0.01457,m3 / L
+Water depletion, PET,0.08260,0.00943,0.06709,0.09811,m3 / L
+Cumulative energy, SACHET,0.628,0.070,0.513,0.743,MJ / L
+Cumulative energy, PET,1.948,0.212,1.599,2.297,MJ / L

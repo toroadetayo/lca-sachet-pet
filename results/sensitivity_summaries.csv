@@ -1,0 +1,7 @@
+scenario,product,indicator,baseline_mean,scenario_mean,units,notes
+PET_50pct_recycling,PET,GWP,0.08629,0.07309,kg CO2-eq / L,"50% recycling reduces packaging EoL credit; other parameters = mean"
+PET_50pct_recycling,PET,Water depletion,0.08260,0.04180,m3 / L,"50% recycling assumed to halve virgin packaging water"
+PET_50pct_recycling,PET,Cumulative energy,1.948,1.048,MJ / L,"50% recycling halves packaging energy contribution"
+SACHET_20pct_lighter,SACHET,GWP,0.04641,0.04113,kg CO2-eq / L,"20% lighter packaging mass (multiplier 0.8)"
+SACHET_20pct_lighter,SACHET,Water depletion,0.01240,0.01012,m3 / L,"20% lighter packaging mass"
+SACHET_20pct_lighter,SACHET,Cumulative energy,0.628,0.532,MJ / L,"20% lighter packaging mass reduces packaging energy by 20%"

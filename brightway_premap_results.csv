@@ -1,0 +1,13 @@
+flow_name,recommended_search_string,suggested_db,suggested_process_name,suggested_process_code,notes
+polyethylene film,polyethylene film production,ELCD,Polyethylene, low density, film production,<paste_id>,Search for "LDPE film" or "polyethylene film" in ELCD/USLCI
+polyethylene terephthalate,polyethylene terephthalate granulate production,ELCD,PET granulate production,<paste_id>,Use PET bottle production or PET granulate process
+clean water,water treated distribution to tap,ELCD,Water, conventional treatment and distribution,<paste_id>,Scale per L (m3->L)
+electricity,electricity grid mix Nigeria or West Africa proxy,ELCD,Electricity, medium voltage, consumption,<paste_id>,Use closest regional grid mix if Nigeria not available
+truck transport,transport freight road lorry >16t,ELCD,Transport, freight, lorry >16t (diesel),<paste_id>,Convert to tkm: mass(tonnes)*km
+disposal landfill,disposal landfill municipal waste,ELCD,Disposal, landfill, municipal solid waste,<paste_id>,Choose unmanaged landfill for Lagos context
+open burning,open burning of waste,ELCD,Open burning of waste (uncontrolled),<paste_id>,High uncertainty; document assumptions
+recycling_pe,polyethylene recycling process,ELCD,Recycling, polyethylene film recycling,<paste_id>,If closed-loop process unavailable, model avoided burden conservatively
+recycling_pet,pet recycling bottles,ELCD,Recycling, PET beverage bottles,<paste_id>,Use beverage-bottle recycling process and recovery rates
+printing inks,printing inks for packaging,ELCD,Printing inks, packaging,<paste_id>,Small mass but include if relevant
+blow moulding,blow moulding PET bottle,ELCD,Blow moulding, PET bottle production,<paste_id>,Energy per bottle (convert to per FU)
+water treatment kWh,water treatment conventional per m3,ELCD,Water treatment, conventional, per m3,<paste_id>,Scale to per L by dividing by 1000

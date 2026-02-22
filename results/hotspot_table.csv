@@ -1,0 +1,6 @@
+life_cycle_stage,sachet_contribution_pct,pet_contribution_pct,sachet_kgCO2e,pet_kgCO2e
+packaging_production,38.2,53.5,0.01620,0.04800
+filling_energy,33.0,15.6,0.01400,0.01400
+transport,0.1,0.1,0.00002,0.00010
+end_of_life,28.7,30.8,0.01224,0.02760
+total,100,100,0.04246,0.08970

@@ -1,0 +1,6 @@
+stage,sachet_kgCO2e_per_L,pet_kgCO2e_per_L,notes
+packaging_production,0.01620,0.04800,"sachet: 0.006 kg * 2.7 kgCO2e/kg; PET: 0.024 kg * 2.0 kgCO2e/kg"
+filling_energy,0.01400,0.01400,"0.02 kWh/L * 0.70 kgCO2e/kWh"
+transport,0.00002,0.00010,"tkm = mass(t)*40 km; EF = 0.10 kgCO2e/tkm"
+end_of_life,0.01224,0.02760,"open burn + recycling credit (see notes)"
+total,0.04246,0.08970,

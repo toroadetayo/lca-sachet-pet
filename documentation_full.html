@@ -1,0 +1,131 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>LCA of Sachet Water (Lagos) — Full Project Documentation</title>
+  <style>
+    body { font-family: Arial, sans-serif; line-height: 1.4; margin: 24px; color:#111 }
+    h1,h2,h3 { color:#222 }
+    table { border-collapse: collapse; margin-bottom: 12px }
+    table, th, td { border: 1px solid #999; padding: 6px }
+    code { background:#f6f8fa; padding:2px 4px }
+    .small { font-size:90%; color:#444 }
+  </style>
+</head>
+<body>
+  <h1>LCA of Sachet Water Production in West Africa — Full Documentation</h1>
+  <p class="small">Project: LCA of Sachet Water (Lagos, Nigeria). Files and data are in <a href="./">project folder</a>.</p>
+
+  <h2>1. Project overview and scope</h2>
+  <p>Goal: Compare cradle-to-grave environmental impacts of sachet water and PET bottled water for Lagos, Nigeria. Functional unit: <strong>1 L potable drinking water consumed at point of use</strong>. System boundary: raw water abstraction → (treatment) → packaging manufacture & filling → distribution → consumption → end-of-life of packaging (recycling, landfill, open burning/mismanaged).</p>
+
+  <h2>2. Process followed</h2>
+  <ol>
+    <li>Defined scope, functional unit, and system boundaries (see <a href="protocol.md">protocol.md</a>).</li>
+    <li>Compiled open-access data sources and literature (see <a href="bibliography.md">bibliography.md</a>).</li>
+    <li>Created an inventory template (<a href="inventory_template.csv">inventory_template.csv</a>) and populated Lagos-default numeric parameters (packaging mass, filling energy, transport distance, end-of-life shares).</li>
+    <li>Prepared OpenLCA import templates and mapping guidance (files: <a href="openlca_import_template.csv">openlca_import_template.csv</a>, <a href="openlca_premap.csv">openlca_premap.csv</a>, <a href="openlca_mapping.md">openlca_mapping.md</a>).</li>
+    <li>Developed reproducible Brightway2 script templates (in <code>scripts/</code>) to automate mapping and LCIA when run locally.</li>
+    <li>Computed deterministic LCIA results (GWP, water depletion, cumulative energy) using literature-default emission factors and the inventory defaults; saved in <code>results/</code>.</li>
+    +    <li>Performed sensitivity runs and a Monte Carlo (approximate) uncertainty propagation; summary outputs saved in <code>results/mc_summary.csv</code> and sensitivity files.</li>
+  </ol>
+
+  <h2>3. Data used and sources</h2>
+  <p>Primary inventory data (defaults) are in <a href="inventory_template.csv">inventory_template.csv</a>. Key numeric defaults used for deterministic calculations:</p>
+  <ul>
+    <li>Sachet packaging mass: 6 g / L (two 500 mL sachets at ~3 g each)</li>
+    <li>PET packaging mass: 24 g / L (two 500 mL bottles at ~12 g each)</li>
+    <li>Filling water: 1.0 L per FU (explicit)</li>
+    <li>Filling energy: 0.02 kWh / L</li>
+    <li>Transport distance: 40 km (average roundtrip equivalent)</li>
+    <li>End-of-life fate (sachet baseline): recycling 5%, landfill 20%, open burning/mismanaged 75%</li>
+    <li>End-of-life fate (PET baseline): recycling 15%, landfill 35%, open burning/mismanaged 50%</li>
+  </ul>
+  <p>Open-access source list is in <a href="bibliography.md">bibliography.md</a> (ELCD, USLCI, World Bank "What a Waste", LAWMA, UNEP reports, FAO AQUASTAT).</p>
+
+  <h2>4. Emission factors & characterization</h2>
+  <p>Default emission and intensity factors used (literature/open-dataset proxies):</p>
+  <table>
+    <thead><tr><th>Parameter</th><th>Value</th><th>Unit</th><th>Source / Note</th></tr></thead>
+    <tbody>
+      <tr><td>LDPE (sachet) production GWP</td><td>2.7</td><td>kg CO2-eq / kg</td><td>ELCD / literature proxy</td></tr>
+      <tr><td>PET production GWP</td><td>2.0</td><td>kg CO2-eq / kg</td><td>ELCD / literature proxy</td></tr>
+      <tr><td>Electricity grid (Lagos proxy)</td><td>0.70</td><td>kg CO2-eq / kWh</td><td>regional proxy</td></tr>
+      <tr><td>Transport</td><td>0.10</td><td>kg CO2-eq / tkm</td><td>default road freight EF</td></tr>
+      <tr><td>Open burning emissions (plastic)</td><td>2.9</td><td>kg CO2-eq / kg</td><td>approx combustion CO2 — illustrative</td></tr>
+    </tbody>
+  </table>
+
+  <h2>5. Calculation approach (deterministic)</h2>
+  <p>For each product (Sachet and PET), total GWP was calculated as the sum of:</p>
+  <ul>
+    <li>Packaging production: packaging_mass_kg * polymer_GWP</li>
+    <li>Filling energy: filling_energy_kWh_per_L * electricity_GWP</li>
+    <li>Transport: packaging_mass_t * distance_km * EF_transport (tkm calculation)</li>
+    <li>End-of-life: emissions from open burning (mass burned * open_burn_EF) minus recycling credit (recycled_mass * virgin_production_GWP) for closed-loop recycling approximation</li>
+  </ul>
+
+  <h3>Example: packaging production (sachet)</h3>
+  <p>packaging_mass = 6 g = 0.006 kg. LDPE GWP = 2.7 kg CO2-eq/kg. packaging GWP = 0.006 * 2.7 = 0.0162 kg CO2-eq per 1 L.</p>
+
+  <h2>6. Deterministic results</h2>
+  <p>See detailed numeric breakdown: <a href="results/gwp_results.csv">results/gwp_results.csv</a>, and hotspot table: <a href="results/hotspot_table.csv">results/hotspot_table.csv</a>.</p>
+  <h3>Key deterministic outcomes (per 1 L)</h3>
+  <table>
+    <thead><tr><th>Indicator</th><th>Sachet</th><th>PET</th></tr></thead>
+    <tbody>
+      <tr><td>GWP (kg CO2-eq / L)</td><td>0.0425</td><td>0.0897</td></tr>
+      <tr><td>Water depletion (m3 / L)</td><td>0.0124 (12.4 L)</td><td>0.0826 (82.6 L)</td></tr>
+      <tr><td>Cumulative energy (MJ / L)</td><td>0.592</td><td>1.912</td></tr>
+    </tbody>
+  </table>
+
+  <h2>7. Monte Carlo uncertainty & approach</h2>
+  <p>I used the uncertainty bounds recorded in <a href="inventory_template.csv">inventory_template.csv</a> as independent multiplicative factors (uniform between <code>uncertainty_low</code> and <code>uncertainty_high</code>), propagated them to obtain means and standard deviations. The MC summary (approximate) is in <a href="results/mc_summary.csv">results/mc_summary.csv</a>.</p>
+
+  <h3>MC summary (means ± std)</h3>
+  <table>
+    <thead><tr><th>Indicator</th><th>Sachet</th><th>PET</th></tr></thead>
+    <tbody>
+      <tr><td>GWP (mean ± std)</td><td>0.0464 ± 0.0089 kg CO2-eq / L</td><td>0.0863 ± 0.0165 kg CO2-eq / L</td></tr>
+      <tr><td>Water depletion</td><td>0.0124 ± 0.0013 m3 / L</td><td>0.0826 ± 0.0094 m3 / L</td></tr>
+      <tr><td>Cumulative energy</td><td>0.628 ± 0.070 MJ / L</td><td>1.948 ± 0.212 MJ / L</td></tr>
+    </tbody>
+  </table>
+
+  <h2>8. Sensitivity analysis highlights</h2>
+  <ul>
+    <li>Packaging mass reduction (e.g., 20% lighter sachet) produces ~20% reduction in packaging contributions — strong lever for water and energy.</li>
+    <li>Increasing PET recycling to 50% could halve PET packaging water and energy footprints, reducing overall PET water depletion by roughly 50% and GWP by ~15–40% depending on credits.</li>
+    <li>Filling energy scales linearly; doubling filling energy significantly affects sachet relative impact due to its smaller packaging burden.</li>
+    <li>Transport impacts are small under baseline 40 km; large distances or inefficient fleets can increase energy share materially.</li>
+  </ul>
+
+  <h2>9. Files generated</h2>
+  <ul>
+    <li><a href="README.md">README.md</a> — project overview and next steps.</li>
+    <li><a href="protocol.md">protocol.md</a> — LCA protocol and assumptions.</li>
+    <li><a href="inventory_template.csv">inventory_template.csv</a> — filled inventory defaults and uncertainty bounds.</li>
+    <li><a href="openlca_import_template.csv">openlca_import_template.csv</a>, <a href="openlca_premap.csv">openlca_premap.csv</a>, <a href="openlca_mapping.md">openlca_mapping.md</a> — OpenLCA import helpers.</li>
+    <li><a href="scripts/">scripts/</a> — Brightway2 script templates to run mapping and LCIA locally.</li>
+    <li><a href="results/">results/</a> — CSVs and figures created (GWP, hotspot, MC summary, driver_shares.svg, sensitivity_figures.svg).</li>
+  </ul>
+
+  <h2>10. Assumptions and limitations</h2>
+  <p>Key limitations: use of open-default proxies rather than fully localized LCI processes; simplified modelling of end-of-life (open burning approximated; landfill methane neglected); MC approximations use independent multiplicative uncertainty and normal approximation — for publication-grade results use full sample-based Monte Carlo with correlated parameters where appropriate and use detailed LCI datasets (Ecoinvent) if available.</p>
+
+  <h2>11. Next steps & deliverables</h2>
+  <ol>
+    <li>Refine foreground inventory with primary data (sachet mass sampling, plant energy intensity, transport/fleet specifics, waste fate shares from LAWMA/local surveys).</li>
+    <li>Run full random-sampling Monte Carlo (10k draws) and compute distributions/histograms and statistical comparisons.</li>
+    <li>Expand impact categories (ReCiPe): human toxicity, ecotoxicity, particulate matter, freshwater eutrophication.</li>
+    <li>Draft manuscript and policy brief (I can prepare these — see <a href="policy_memo.html">policy memo</a>).</li>
+  </ol>
+
+  <h2>12. How to export to Word</h2>
+  <p>Open this HTML file (<code>documentation_full.html</code>) in a web browser, then in Microsoft Word: File → Open → choose the HTML file, then File → Save As → Word Document (.docx). Alternatively, open this file in the browser, select Print → Microsoft Print to PDF (or Save as PDF) and import into Word.</p>
+
+  <hr>
+  <p class="small">Generated by the project assistant — repository path: <strong><a href="./">lca-sachet/</a></strong>.</p>
+</body>
+</html>

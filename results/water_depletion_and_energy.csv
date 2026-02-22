@@ -1,0 +1,3 @@
+indicator,unit,sachet,pet,notes
+water_depletion,m3_per_L,0.01240,0.08260,"sachet: packaging 0.006 kg * 1.9 m3/kg + 0.001 m3 filling; PET: 0.024 kg * 3.4 m3/kg + 0.001 m3 filling"
+cumulative_energy,MJ_per_L,0.592,1.912,"packaging energy + filling energy (0.02 kWh = 0.072 MJ) + transport energy (~0.04 MJ)"
