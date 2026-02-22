@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>LCA of Sachet Water (Lagos) — Full Project Documentation</title>
+  <style>
+    body { font-family: Arial, sans-serif; line-height: 1.4; margin: 24px; color:#111 }
+    h1,h2,h3 { color:#222 }
+    table { border-collapse: collapse; margin-bottom: 12px }
+    table, th, td { border: 1px solid #999; padding: 6px }
+    code { background:#f6f8fa; padding:2px 4px }
+    .small { font-size:90%; color:#444 }
+  </style>
+</head>
+<body>
+  <h1>LCA of Sachet Water Production in West Africa — Full Documentation</h1>
+  <p class="small">Project: LCA of Sachet Water (Lagos, Nigeria). Files and data are in the project folder.</p>
+
+  <h2>1. Project overview and scope</h2>
+  <p>Goal: Compare cradle-to-grave environmental impacts of sachet water and PET bottled water for Lagos, Nigeria. Functional unit: <strong>1 L potable drinking water consumed at point of use</strong>. System boundary: raw water abstraction → (treatment) → packaging manufacture & filling → distribution → consumption → end-of-life of packaging (recycling, landfill, open burning/mismanaged).</p>
+
+  <h2>2. Process followed</h2>
+  <ol>
+    <li>Defined scope, functional unit, and system boundaries (see protocol.md).</li>
+    <li>Compiled open-access data sources and literature (see bibliography.md).</li>
+    <li>Created an inventory template (inventory_template.csv) and populated Lagos-default numeric parameters (packaging mass, filling energy, transport distance, end-of-life shares).</li>
+    <li>Prepared OpenLCA import templates and mapping guidance (openlca_import_template.csv, openlca_premap.csv, openlca_mapping.md).</li>
+    <li>Developed reproducible Brightway2 script templates (in scripts/) to automate mapping and LCIA when run locally.</li>
+    <li>Computed deterministic LCIA results (GWP, water depletion, cumulative energy) using literature-default emission factors and the inventory defaults; saved in results/.</li>
+    <li>Performed sensitivity runs and a Monte Carlo (approximate) uncertainty propagation; summary outputs saved in results/mc_summary.csv and sensitivity files.</li>
+  </ol>
+
+  <h2>3. Data used and sources</h2>
+  <p>Primary inventory data (defaults) are in inventory_template.csv. Key numeric defaults used for deterministic calculations:</p>
+  <ul>
+    <li>Sachet packaging mass: 6 g / L (two 500 mL sachets at ~3 g each)</li>
+    <li>PET packaging mass: 24 g / L (two 500 mL bottles at ~12 g each)</li>
+    <li>Filling water: 1.0 L per FU (explicit)</li>
+    <li>Filling energy: 0.02 kWh / L</li>
+    <li>Transport distance: 40 km (average roundtrip equivalent)</li>
+    <li>End-of-life fate (sachet baseline): recycling 5%, landfill 20%, open burning/mismanaged 75%</li>
+    <li>End-of-life fate (PET baseline): recycling 15%, landfill 35%, open burning/mismanaged 50%</li>
+  </ul>
+  <p>Open-access source list is in bibliography.md (ELCD, USLCI, World Bank "What a Waste", LAWMA, UNEP reports, FAO AQUASTAT).</p>
+
+  <h2>4. Emission factors & characterization</h2>
+  <p>Default emission and intensity factors used (literature/open-dataset proxies):</p>
+  <table>
+    <thead><tr><th>Parameter</th><th>Value</th><th>Unit</th><th>Source / Note</th></tr></thead>
+    <tbody>
+      <tr><td>LDPE (sachet) production GWP</td><td>2.7</td><td>kg CO2-eq / kg</td><td>ELCD / literature proxy</td></tr>
+      <tr><td>PET production GWP</td><td>2.0</td><td>kg CO2-eq / kg</td><td>ELCD / literature proxy</td></tr>
+      <tr><td>Electricity grid (Lagos proxy)</td><td>0.70</td><td>kg CO2-eq / kWh</td><td>regional proxy</td></tr>
+      <tr><td>Transport</td><td>0.10</td><td>kg CO2-eq / tkm</td><td>default road freight EF</td></tr>
+      <tr><td>Open burning emissions (plastic)</td><td>2.9</td><td>kg CO2-eq / kg</td><td>approx combustion CO2 — illustrative</td></tr>
+    </tbody>
+  </table>
+
+  <h2>5. Calculation approach (deterministic)</h2>
+  <p>For each product (Sachet and PET), total GWP was calculated as the sum of packaging production, filling energy, transport, and end-of-life contributions (see project files for full formulas).</p>
+
+  <h2>6. Deterministic results</h2>
+  <p>See detailed numeric breakdown in the repository results folder.</p>
+
+  <h2>7. Monte Carlo uncertainty & approach</h2>
+  <p>Used uncertainty bounds in inventory_template.csv as independent multiplicative factors and propagated to mean and std (approximate MC summary in results/mc_summary.csv).</p>
+
+  <h2>8. Sensitivity analysis highlights</h2>
+  <ul>
+    <li>Packaging mass reduction yields large water and energy benefits.</li>
+    <li>Increased PET recycling sharply reduces PET water depletion and energy.</li>
+    <li>End-of-life management (avoid open burning) reduces GWP and emissions exposure.</li>
+  </ul>
+
+  <h2>9. Files generated</h2>
+  <ul>
+    <li>README.md, protocol.md, inventory_template.csv</li>
+    <li>OpenLCA and Brightway helpers in project root and scripts/</li>
+    <li>Results in results/ (CSV summaries and SVG figures).</li>
+  </ul>
+
+  <h2>10. Export</h2>
+  <p>This document is provided as an HTML-based Word-compatible file; open in Word and Save As .docx for a native Word document.</p>
+</body>
+</html>
