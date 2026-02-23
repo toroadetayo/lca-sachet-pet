@@ -1,0 +1,982 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>LCA Case Study - Sachet vs PET (Lagos) - Dark</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
+    <style>
+      :root {
+        --bg: 222 47% 8%;
+        --panel: 222 42% 12%;
+        --ink: 210 40% 96%;
+        --muted: 215 20% 75%;
+        --line: 217 19% 27%;
+        --teal: 178 62% 48%;
+        --amber: 37 91% 57%;
+        --sky: 201 96% 62%;
+        --rose: 342 75% 65%;
+      }
+      html { scroll-behavior: smooth; }
+      body {
+        font-family: "Geist", ui-sans-serif, system-ui, -apple-system, Segoe UI, sans-serif;
+        color: hsl(var(--ink));
+        background:
+          radial-gradient(900px 450px at 0% -5%, rgba(20, 184, 166, 0.18) 0%, rgba(20, 184, 166, 0) 70%),
+          radial-gradient(800px 420px at 100% 0%, rgba(14, 165, 233, 0.16) 0%, rgba(14, 165, 233, 0) 68%),
+          #0b1220;
+      }
+      .card {
+        background: hsl(var(--panel));
+        border: 1px solid hsl(var(--line));
+        border-radius: 14px;
+        box-shadow: 0 8px 24px rgba(2, 6, 23, 0.45);
+      }
+      .chip {
+        border: 1px solid hsl(var(--line));
+        border-radius: 999px;
+        padding: 0.35rem 0.7rem;
+        font-size: 0.75rem;
+        background: #0f172a;
+        color: #e2e8f0;
+      }
+      .num { font-variant-numeric: tabular-nums; }
+      .nav-link.active { color: #0f766e; font-weight: 600; }
+      .hotspot-track {
+        width: 100%;
+        height: 10px;
+        border-radius: 999px;
+        background: #1e293b;
+        overflow: hidden;
+      }
+      .hotspot-fill {
+        height: 100%;
+        border-radius: 999px;
+      }
+      .explain-plain, .explain-tech { display: none; }
+      body.mode-plain .explain-plain { display: block; }
+      body.mode-tech .explain-tech { display: block; }
+      .icon {
+        width: 18px;
+        height: 18px;
+        stroke: currentColor;
+        stroke-width: 2;
+        fill: none;
+      }
+      .chart-wrap {
+        position: relative;
+        width: 100%;
+        height: 300px;
+        max-height: 300px;
+      }
+      .chart-wrap canvas {
+        width: 100% !important;
+        height: 100% !important;
+        display: block;
+      }
+      .chart-wrap-pie {
+        position: relative;
+        width: 100%;
+        height: 250px;
+        max-height: 250px;
+      }
+      .chart-wrap-compact {
+        position: relative;
+        width: 100%;
+        height: 185px;
+        max-height: 185px;
+      }
+      .chart-wrap-pie canvas,
+      .chart-wrap-compact canvas {
+        width: 100% !important;
+        height: 100% !important;
+        display: block;
+      }
+      .mobile-fab {
+        position: fixed;
+        right: 14px;
+        bottom: 14px;
+        z-index: 45;
+      }
+      .overlay {
+        position: fixed;
+        inset: 0;
+        background: rgba(15, 23, 42, 0.45);
+        backdrop-filter: blur(2px);
+        z-index: 60;
+      }
+      .overlay-card {
+        width: min(92vw, 420px);
+        max-height: 85vh;
+        overflow: auto;
+      }
+      .no-squeeze {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.5rem;
+      }
+      @media (min-width: 768px) {
+        .no-squeeze {
+          flex-direction: row;
+          justify-content: space-between;
+          align-items: center;
+        }
+      }
+      .text-slate-900,
+      .text-slate-800,
+      .text-slate-700 {
+        color: #e2e8f0 !important;
+      }
+      .text-slate-600,
+      .text-slate-500 {
+        color: #94a3b8 !important;
+      }
+      .bg-white,
+      .bg-slate-50,
+      .bg-slate-100 {
+        background-color: #0f172a !important;
+      }
+      .border-slate-200,
+      .border-slate-300 {
+        border-color: #334155 !important;
+      }
+      header {
+        background: rgba(15, 23, 42, 0.9) !important;
+        border-color: #334155 !important;
+      }
+      th,
+      td {
+        border-color: #334155 !important;
+      }
+      thead tr {
+        background: #111827 !important;
+      }
+      input[type="range"] {
+        accent-color: #14b8a6;
+      }
+      .mobile-fab {
+        background: #0f172a !important;
+        color: #e2e8f0 !important;
+      }
+    </style>
+  </head>
+  <body class="mode-plain min-h-screen">
+    <header class="sticky top-0 z-40 border-b border-slate-200/70 bg-white/90 backdrop-blur">
+      <div class="mx-auto flex max-w-7xl items-center justify-between px-4 py-3 sm:px-6 lg:px-8">
+        <a href="#top" class="flex items-center gap-2 text-sm font-semibold tracking-tight text-slate-900">
+          <svg class="icon text-teal-700" viewBox="0 0 24 24"><path d="M3 20h18" /><path d="M5 20V8l7-4 7 4v12" /><path d="M9 20v-6h6v6" /></svg>
+          LCA Case Study - Sachet vs PET
+        </a>
+        <nav class="hidden items-center gap-5 text-sm text-slate-600 lg:flex">
+          <a class="nav-link" href="#overview">Overview</a>
+          <a class="nav-link" href="#approach">Approach</a>
+          <a class="nav-link" href="#results">Results</a>
+          <a class="nav-link" href="#dashboard">Scenario Studio</a>
+          <a class="nav-link" href="#artifacts">Artifacts</a>
+          <a class="nav-link" href="#glossary">Glossary</a>
+        </nav>
+        <div class="flex items-center gap-2">
+          <button id="modeToggle" class="hidden rounded-md border border-slate-300 px-3 py-1.5 text-xs font-medium text-slate-700 lg:inline-flex">Audience Mode: Plain Language</button>
+          <button id="menuBtn" class="rounded-md border border-slate-300 p-2 lg:hidden" aria-label="Open menu">
+            <svg class="icon" viewBox="0 0 24 24"><path d="M3 6h18" /><path d="M3 12h18" /><path d="M3 18h18" /></svg>
+          </button>
+        </div>
+      </div>
+    </header>
+
+    <button id="modeToggleMobile" class="mobile-fab rounded-full border border-slate-300 bg-white px-3 py-2 text-xs font-medium text-slate-700 shadow lg:hidden">Audience: Plain</button>
+
+    <div id="mobileMenuModal" class="overlay hidden lg:hidden">
+      <div class="flex min-h-full items-center justify-center p-4">
+        <div class="overlay-card card p-5">
+          <div class="flex items-center justify-between">
+            <h3 class="text-base font-semibold">Navigate</h3>
+            <button id="mobileMenuClose" class="rounded-md border border-slate-300 p-2" aria-label="Close menu">
+              <svg class="icon" viewBox="0 0 24 24"><path d="M18 6L6 18" /><path d="M6 6l12 12" /></svg>
+            </button>
+          </div>
+          <div class="mt-4 grid gap-2 text-sm text-slate-700">
+            <a class="rounded-md border border-slate-200 px-3 py-2" href="#overview">Overview</a>
+            <a class="rounded-md border border-slate-200 px-3 py-2" href="#approach">Approach</a>
+            <a class="rounded-md border border-slate-200 px-3 py-2" href="#results">Results</a>
+            <a class="rounded-md border border-slate-200 px-3 py-2" href="#dashboard">Scenario Studio</a>
+            <a class="rounded-md border border-slate-200 px-3 py-2" href="#artifacts">Artifacts</a>
+            <a class="rounded-md border border-slate-200 px-3 py-2" href="#glossary">Glossary</a>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <main id="top" class="mx-auto max-w-7xl space-y-8 px-4 py-8 sm:px-6 lg:px-8">
+      <section id="overview" class="card p-6 md:p-8">
+        <div class="grid gap-8 lg:grid-cols-12">
+          <div class="lg:col-span-8">
+            <p class="text-xs uppercase tracking-[0.18em] text-slate-500">Sustainability Research + Communication</p>
+            <h1 class="mt-2 text-3xl font-bold tracking-tight text-slate-900 sm:text-4xl">End-to-End LCA Case Study: Sachet Water vs PET Bottled Water (Lagos)</h1>
+            <p class="mt-3 max-w-3xl text-sm text-slate-600 explain-plain">
+              This page explains the full project in one place: why we did it, how we calculated impacts, what we found, and what decisions it supports.
+            </p>
+            <p class="mt-3 max-w-3xl text-sm text-slate-600 explain-tech">
+              Cradle-to-grave comparative LCA with functional unit of 1 L consumed, deterministic + uncertainty outputs, sensitivity scenarios, and policy translation outputs.
+            </p>
+            <div class="mt-4 flex flex-wrap gap-2">
+              <span class="chip">Case locality: Lagos, Nigeria</span>
+              <span class="chip">Functional unit: 1 L consumed</span>
+              <span class="chip">Boundary: cradle-to-grave</span>
+              <span class="chip">Audience: technical + non-technical</span>
+            </div>
+            <div class="mt-5 flex flex-wrap gap-3">
+              <a href="#results" class="rounded-md bg-teal-700 px-4 py-2 text-sm font-medium text-white">See Results</a>
+              <a href="#dashboard" class="rounded-md border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-700">Open Scenario Studio</a>
+            </div>
+          </div>
+          <div class="lg:col-span-4">
+            <div class="card bg-slate-50 p-4">
+              <p class="text-xs uppercase tracking-widest text-slate-500">Who Is This For?</p>
+              <ul class="mt-3 space-y-2 text-sm text-slate-700">
+                <li class="flex items-center gap-2"><svg class="icon text-teal-700" viewBox="0 0 24 24"><path d="M8 6h13"/><path d="M8 12h13"/><path d="M8 18h13"/><path d="M3 6h.01"/><path d="M3 12h.01"/><path d="M3 18h.01"/></svg> Policymakers and city agencies</li>
+                <li class="flex items-center gap-2"><svg class="icon text-sky-700" viewBox="0 0 24 24"><path d="M12 20V10"/><path d="M18 20V4"/><path d="M6 20v-6"/></svg> Sustainability researchers</li>
+                <li class="flex items-center gap-2"><svg class="icon text-amber-600" viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9l-5 4.87L18.18 21 12 17.77 5.82 21 7 13.87 2 9l6.91-.74L12 2z"/></svg> NGOs and communication teams</li>
+                <li class="flex items-center gap-2"><svg class="icon text-rose-700" viewBox="0 0 24 24"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg> Students and learners</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+        <article class="card p-5">
+          <p class="text-xs uppercase tracking-wider text-slate-500">Climate Impact (GWP)</p>
+          <p class="num mt-2 text-3xl font-bold text-slate-900">0.0425</p>
+          <p class="text-sm text-slate-600">kg CO2-eq/L (Sachet baseline)</p>
+        </article>
+        <article class="card p-5">
+          <p class="text-xs uppercase tracking-wider text-slate-500">Climate Impact (GWP)</p>
+          <p class="num mt-2 text-3xl font-bold text-slate-900">0.0897</p>
+          <p class="text-sm text-slate-600">kg CO2-eq/L (PET baseline)</p>
+        </article>
+        <article class="card p-5">
+          <p class="text-xs uppercase tracking-wider text-slate-500">Water Depletion</p>
+          <p class="num mt-2 text-3xl font-bold text-slate-900">12.4 vs 82.6</p>
+          <p class="text-sm text-slate-600">L of virtual water per 1 L delivered</p>
+        </article>
+        <article class="card p-5">
+          <p class="text-xs uppercase tracking-wider text-slate-500">Cumulative Energy</p>
+          <p class="num mt-2 text-3xl font-bold text-slate-900">0.592 vs 1.912</p>
+          <p class="text-sm text-slate-600">MJ/L (Sachet vs PET)</p>
+        </article>
+      </section>
+
+      <section id="approach" class="card p-6 md:p-8">
+        <div class="flex items-center justify-between gap-4">
+          <h2 class="text-2xl font-semibold tracking-tight">Project Approach (End-to-End)</h2>
+          <span class="chip">Transparent + Reproducible Workflow</span>
+        </div>
+        <div class="mt-5 grid gap-4 md:grid-cols-2 xl:grid-cols-5">
+          <article class="rounded-xl border border-slate-200 p-4">
+            <p class="text-xs font-semibold uppercase text-teal-700">1. Define</p>
+            <p class="mt-2 text-sm text-slate-700">Set goal, audience, functional unit (1 L), and boundaries from raw materials to end-of-life.</p>
+          </article>
+          <article class="rounded-xl border border-slate-200 p-4">
+            <p class="text-xs font-semibold uppercase text-teal-700">2. Collect</p>
+            <p class="mt-2 text-sm text-slate-700">Build inventory defaults and uncertainty ranges for packaging, energy, transport, and waste fate.</p>
+          </article>
+          <article class="rounded-xl border border-slate-200 p-4">
+            <p class="text-xs font-semibold uppercase text-teal-700">3. Model</p>
+            <p class="mt-2 text-sm text-slate-700">Run deterministic LCA calculations for GWP, water depletion, and cumulative energy demand.</p>
+          </article>
+          <article class="rounded-xl border border-slate-200 p-4">
+            <p class="text-xs font-semibold uppercase text-teal-700">4. Test</p>
+            <p class="mt-2 text-sm text-slate-700">Perform sensitivity and Monte Carlo-style uncertainty summaries to test robustness.</p>
+          </article>
+          <article class="rounded-xl border border-slate-200 p-4">
+            <p class="text-xs font-semibold uppercase text-teal-700">5. Translate</p>
+            <p class="mt-2 text-sm text-slate-700">Convert outputs into policy and implementation recommendations.</p>
+          </article>
+        </div>
+
+        <div class="mt-7 grid gap-6 lg:grid-cols-2">
+          <article class="rounded-xl border border-slate-200 p-5">
+            <h3 class="text-lg font-semibold">System Boundary</h3>
+            <p class="mt-2 text-sm text-slate-600 explain-plain">What is included in this study from start to finish.</p>
+            <p class="mt-2 text-sm text-slate-600 explain-tech">Foreground + background flows across cradle-to-grave boundary.</p>
+            <div class="mt-4 grid grid-cols-2 gap-3 text-xs sm:grid-cols-3">
+              <div class="min-w-0 break-words rounded-md bg-slate-100 p-2 text-center">Raw material</div>
+              <div class="min-w-0 break-words rounded-md bg-slate-100 p-2 text-center">Packaging production</div>
+              <div class="min-w-0 break-words rounded-md bg-slate-100 p-2 text-center">Filling operations</div>
+              <div class="min-w-0 break-words rounded-md bg-slate-100 p-2 text-center">Transport</div>
+              <div class="min-w-0 break-words rounded-md bg-slate-100 p-2 text-center">Consumption</div>
+              <div class="min-w-0 break-words rounded-md bg-slate-100 p-2 text-center">End-of-life</div>
+            </div>
+          </article>
+
+          <article class="rounded-xl border border-slate-200 p-5">
+            <h3 class="text-lg font-semibold">Core Assumptions (Lagos defaults)</h3>
+            <div class="mt-3 overflow-x-auto">
+              <table class="w-full min-w-[520px] text-left text-sm">
+                <thead>
+                  <tr class="border-b bg-slate-50 text-xs uppercase text-slate-500">
+                    <th class="px-3 py-2">Parameter</th>
+                    <th class="px-3 py-2">Sachet</th>
+                    <th class="px-3 py-2">PET</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr class="border-b"><td class="px-3 py-2">Packaging mass per FU</td><td class="px-3 py-2 num">6 g/L</td><td class="px-3 py-2 num">24 g/L</td></tr>
+                  <tr class="border-b"><td class="px-3 py-2">Filling energy</td><td class="px-3 py-2 num" colspan="2">0.02 kWh/L</td></tr>
+                  <tr class="border-b"><td class="px-3 py-2">Transport distance</td><td class="px-3 py-2 num" colspan="2">40 km</td></tr>
+                  <tr class="border-b"><td class="px-3 py-2">Recycling share</td><td class="px-3 py-2 num">5%</td><td class="px-3 py-2 num">15%</td></tr>
+                  <tr><td class="px-3 py-2">Mismanaged/open-burn share</td><td class="px-3 py-2 num">75%</td><td class="px-3 py-2 num">50%</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </article>
+        </div>
+      </section>
+
+      <section id="results" class="card p-6 md:p-8">
+        <div class="no-squeeze">
+          <h2 class="text-2xl font-semibold tracking-tight">Results, Tables, and Visual Evidence</h2>
+          <span class="chip">Deterministic + Sensitivity + Uncertainty</span>
+        </div>
+
+        <div class="mt-6 grid gap-6 xl:grid-cols-2">
+          <article class="rounded-xl border border-slate-200 p-5">
+            <h3 class="text-lg font-semibold">A. Baseline Comparison</h3>
+            <p class="mt-1 text-sm text-slate-600">Sachet and PET values per 1 L consumed.</p>
+            <div class="chart-wrap mt-4">
+              <canvas id="baselineChart"></canvas>
+            </div>
+          </article>
+
+          <article class="rounded-xl border border-slate-200 p-5">
+            <h3 class="text-lg font-semibold">B. Sensitivity & Scenario Outcomes</h3>
+            <div class="mt-3 overflow-x-auto">
+              <table class="w-full min-w-[600px] text-left text-sm">
+                <thead>
+                  <tr class="border-b bg-slate-50 text-xs uppercase text-slate-500">
+                    <th class="px-3 py-2">Scenario</th>
+                    <th class="px-3 py-2">Product</th>
+                    <th class="px-3 py-2">GWP (kg CO2-eq/L)</th>
+                    <th class="px-3 py-2">Interpretation</th>
+                  </tr>
+                </thead>
+                <tbody id="scenarioRows"></tbody>
+              </table>
+            </div>
+          </article>
+        </div>
+
+        <div class="mt-6 grid gap-6 xl:grid-cols-2">
+          <article class="rounded-xl border border-slate-200 p-5">
+            <h3 class="text-lg font-semibold">C. Hotspot Contribution (GWP share)</h3>
+            <p class="mt-1 text-sm text-slate-600">Where impacts are coming from within each life-cycle stage.</p>
+            <div id="hotspotList" class="mt-4 space-y-3"></div>
+          </article>
+
+          <article class="rounded-xl border border-slate-200 p-5">
+            <h3 class="text-lg font-semibold">D. Uncertainty Snapshot (Monte Carlo summary)</h3>
+            <div class="chart-wrap mt-4">
+              <canvas id="uncertaintyChart"></canvas>
+            </div>
+            <p class="mt-3 text-xs text-slate-500">Bars show mean values; error bars (95th - 5th range) shown as labels below.</p>
+            <div id="uncertaintyText" class="mt-3 grid gap-2 text-xs text-slate-600"></div>
+          </article>
+        </div>
+
+        <div class="mt-6 grid gap-6 lg:grid-cols-2">
+          <article class="rounded-xl border border-slate-200 p-4">
+            <div class="no-squeeze">
+              <h3 class="text-sm font-semibold uppercase text-slate-700">Driver shares</h3>
+            </div>
+            <p class="mt-2 text-xs text-slate-500">Mean GWP contributions (per 1 L)</p>
+            <div class="mt-3 grid gap-4">
+              <div class="rounded-lg border border-slate-200 p-3">
+                <p class="text-xs font-medium uppercase tracking-wider text-slate-500">Sachet</p>
+                <div class="chart-wrap-pie mt-2">
+                  <canvas id="driverPieSachet"></canvas>
+                </div>
+                <div class="mt-2 grid grid-cols-2 gap-1 text-[11px] text-slate-600">
+                  <p>Packaging: 34.9%</p>
+                  <p>Filling energy: 45.3%</p>
+                  <p>Transport: 0.1%</p>
+                  <p>End-of-life: 19.7%</p>
+                </div>
+              </div>
+              <div class="rounded-lg border border-slate-200 p-3">
+                <p class="text-xs font-medium uppercase tracking-wider text-slate-500">PET bottle</p>
+                <div class="chart-wrap-pie mt-2">
+                  <canvas id="driverPiePet"></canvas>
+                </div>
+                <div class="mt-2 grid grid-cols-2 gap-1 text-[11px] text-slate-600">
+                  <p>Packaging: 55.6%</p>
+                  <p>Filling energy: 24.3%</p>
+                  <p>Transport: 0.3%</p>
+                  <p>End-of-life: 19.7%</p>
+                </div>
+              </div>
+            </div>
+          </article>
+          <article class="rounded-xl border border-slate-200 p-4">
+            <div class="no-squeeze">
+              <h3 class="text-sm font-semibold uppercase text-slate-700">Sensitivity visuals</h3>
+            </div>
+            <p class="mt-2 text-xs text-slate-500">Sensitivity scenarios: baseline vs scenario</p>
+            <div class="mt-3 grid gap-4">
+              <div class="rounded-lg border border-slate-200 p-3">
+                <p class="text-xs font-medium uppercase tracking-wider text-slate-500">GWP (PET baseline vs 50% recycling)</p>
+                <div class="chart-wrap-compact mt-2">
+                  <canvas id="sensGwpChart"></canvas>
+                </div>
+              </div>
+              <div class="rounded-lg border border-slate-200 p-3">
+                <p class="text-xs font-medium uppercase tracking-wider text-slate-500">Water depletion (PET baseline vs 50% recycling)</p>
+                <div class="chart-wrap-compact mt-2">
+                  <canvas id="sensWaterChart"></canvas>
+                </div>
+              </div>
+              <div class="rounded-lg border border-slate-200 p-3">
+                <p class="text-xs font-medium uppercase tracking-wider text-slate-500">Cumulative energy (Sachet baseline vs 20% lighter)</p>
+                <div class="chart-wrap-compact mt-2">
+                  <canvas id="sensEnergyChart"></canvas>
+                </div>
+              </div>
+            </div>
+          </article>
+        </div>
+      </section>
+
+      <section id="dashboard" class="card p-6 md:p-8">
+        <div class="no-squeeze">
+          <h2 class="text-2xl font-semibold tracking-tight">Interactive Decision Studio</h2>
+          <span class="chip">Live Scenario Dashboard</span>
+        </div>
+        <p class="mt-2 text-sm text-slate-600 explain-plain">Move sliders to see what changes policy and design choices can make.</p>
+        <p class="mt-2 text-sm text-slate-600 explain-tech">Parametric scenario engine for recycling rate, packaging mass multiplier, and mismanaged sachet share.</p>
+
+        <div class="mt-5 grid gap-4 md:grid-cols-3">
+          <article class="rounded-xl border border-slate-200 p-4">
+            <label class="text-sm font-medium" for="petRecycle">PET recycling rate</label>
+            <input id="petRecycle" type="range" min="0" max="80" step="1" value="15" class="mt-2 w-full" />
+            <p class="mt-1 text-sm text-slate-600"><span id="petRecycleVal" class="num font-semibold text-slate-900">15</span>%</p>
+          </article>
+          <article class="rounded-xl border border-slate-200 p-4">
+            <label class="text-sm font-medium" for="packMass">Packaging mass multiplier</label>
+            <input id="packMass" type="range" min="70" max="130" step="1" value="100" class="mt-2 w-full" />
+            <p class="mt-1 text-sm text-slate-600"><span id="packMassVal" class="num font-semibold text-slate-900">100</span>% of baseline</p>
+          </article>
+          <article class="rounded-xl border border-slate-200 p-4">
+            <label class="text-sm font-medium" for="sachetMis">Sachet mismanaged/open-burn share</label>
+            <input id="sachetMis" type="range" min="20" max="95" step="1" value="75" class="mt-2 w-full" />
+            <p class="mt-1 text-sm text-slate-600"><span id="sachetMisVal" class="num font-semibold text-slate-900">75</span>%</p>
+          </article>
+        </div>
+
+        <div class="mt-5 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+          <article class="rounded-lg border border-slate-200 p-4">
+            <p class="text-xs text-slate-500">Sachet GWP</p>
+            <p id="simSachetGwp" class="num mt-1 text-2xl font-bold">0.0000</p>
+            <p class="text-xs text-slate-500">kg CO2-eq/L</p>
+          </article>
+          <article class="rounded-lg border border-slate-200 p-4">
+            <p class="text-xs text-slate-500">PET GWP</p>
+            <p id="simPetGwp" class="num mt-1 text-2xl font-bold">0.0000</p>
+            <p class="text-xs text-slate-500">kg CO2-eq/L</p>
+          </article>
+          <article class="rounded-lg border border-slate-200 p-4">
+            <p class="text-xs text-slate-500">Sachet water + energy</p>
+            <p id="simSachetRes" class="num mt-1 text-2xl font-bold">0.0</p>
+            <p class="text-xs text-slate-500">(L + MJ) per L</p>
+          </article>
+          <article class="rounded-lg border border-slate-200 p-4">
+            <p class="text-xs text-slate-500">PET water + energy</p>
+            <p id="simPetRes" class="num mt-1 text-2xl font-bold">0.0</p>
+            <p class="text-xs text-slate-500">(L + MJ) per L</p>
+          </article>
+        </div>
+
+        <div class="mt-5 rounded-xl border border-slate-200 p-5">
+          <h3 class="text-lg font-semibold">Live Comparison</h3>
+          <p class="mt-1 text-sm text-slate-600">Climate impact is shown separately so low GWP values remain visible.</p>
+
+          <div class="mt-4 grid gap-4 lg:grid-cols-2">
+            <div class="rounded-lg border border-slate-200 p-3">
+              <p class="text-xs font-medium uppercase tracking-wider text-slate-500">Climate Impact (GWP)</p>
+              <div class="chart-wrap mt-2">
+                <canvas id="simClimateChart"></canvas>
+              </div>
+            </div>
+            <div class="rounded-lg border border-slate-200 p-3">
+              <p class="text-xs font-medium uppercase tracking-wider text-slate-500">Water and Energy</p>
+              <div class="chart-wrap mt-2">
+                <canvas id="simResourceChart"></canvas>
+              </div>
+            </div>
+          </div>
+
+          <article class="mt-4 rounded-lg border border-slate-200 p-4">
+            <h4 class="text-base font-semibold">What This Means</h4>
+            <div class="mt-3 grid gap-3 md:grid-cols-3">
+              <div class="rounded-md bg-slate-50 p-3">
+                <p class="text-xs uppercase tracking-wider text-slate-500">Climate Winner</p>
+                <p id="simClimateWinner" class="mt-1 text-sm font-semibold text-slate-800"></p>
+              </div>
+              <div class="rounded-md bg-slate-50 p-3">
+                <p class="text-xs uppercase tracking-wider text-slate-500">Resource Winner</p>
+                <p id="simResourceWinner" class="mt-1 text-sm font-semibold text-slate-800"></p>
+              </div>
+              <div class="rounded-md bg-slate-50 p-3">
+                <p class="text-xs uppercase tracking-wider text-slate-500">Best Lever</p>
+                <p id="simBestLever" class="mt-1 text-sm font-semibold text-slate-800"></p>
+              </div>
+            </div>
+            <ul id="decisionBullets" class="mt-4 list-disc space-y-2 pl-5 text-sm text-slate-700"></ul>
+          </article>
+        </div>
+      </section>
+
+      <section id="artifacts" class="card p-6 md:p-8">
+        <div class="no-squeeze">
+          <h2 class="text-2xl font-semibold tracking-tight">Project Artifacts and Deliverables</h2>
+          <span class="chip">All Key Files in This Repository</span>
+        </div>
+        <p class="mt-2 text-sm text-slate-600">Use this section as a guided map of the repository for reviewers and collaborators.</p>
+
+        <div class="mt-5 grid gap-4 md:grid-cols-2">
+          <details class="card p-4" open>
+            <summary class="cursor-pointer text-sm font-semibold">Documentation and narrative outputs</summary>
+            <ul class="mt-3 space-y-2 text-sm text-slate-700">
+              <li><a class="text-teal-700 underline" href="README.md">README.md</a> - project overview</li>
+              <li><a class="text-teal-700 underline" href="documentation_full.html">documentation_full.html</a> - full project documentation</li>
+              <li><a class="text-teal-700 underline" href="policy_memo.html">policy_memo.html</a> - policy-focused summary</li>
+              <li><a class="text-teal-700 underline" href="protocol.md">protocol.md</a> - scope, boundaries, assumptions</li>
+              <li><a class="text-teal-700 underline" href="bibliography.md">bibliography.md</a> - source references</li>
+            </ul>
+          </details>
+
+          <details class="card p-4" open>
+            <summary class="cursor-pointer text-sm font-semibold">Data and model inputs</summary>
+            <ul class="mt-3 space-y-2 text-sm text-slate-700">
+              <li><a class="text-teal-700 underline" href="inventory_template.csv">inventory_template.csv</a> - LCI defaults + uncertainty</li>
+              <li><a class="text-teal-700 underline" href="openlca_import_template.csv">openlca_import_template.csv</a> - import template</li>
+              <li><a class="text-teal-700 underline" href="openlca_premap.csv">openlca_premap.csv</a> - premapping support</li>
+              <li><a class="text-teal-700 underline" href="openlca_mapping.md">openlca_mapping.md</a> - mapping guide</li>
+              <li><a class="text-teal-700 underline" href="data_sources.md">data_sources.md</a> - data strategy</li>
+            </ul>
+          </details>
+
+          <details class="card p-4" open>
+            <summary class="cursor-pointer text-sm font-semibold">Results and visuals</summary>
+            <ul class="mt-3 space-y-2 text-sm text-slate-700">
+              <li><a class="text-teal-700 underline" href="results/gwp_results.csv">results/gwp_results.csv</a></li>
+              <li><a class="text-teal-700 underline" href="results/water_depletion_and_energy.csv">results/water_depletion_and_energy.csv</a></li>
+              <li><a class="text-teal-700 underline" href="results/hotspot_table.csv">results/hotspot_table.csv</a></li>
+              <li><a class="text-teal-700 underline" href="results/sensitivity_summaries.csv">results/sensitivity_summaries.csv</a></li>
+              <li><a class="text-teal-700 underline" href="results/mc_summary.csv">results/mc_summary.csv</a></li>
+              <li><a class="text-teal-700 underline" href="results/driver_shares.svg">results/driver_shares.svg</a> and <a class="text-teal-700 underline" href="results/sensitivity_figures.svg">results/sensitivity_figures.svg</a></li>
+            </ul>
+          </details>
+
+          <details class="card p-4" open>
+            <summary class="cursor-pointer text-sm font-semibold">Automation scripts</summary>
+            <ul class="mt-3 space-y-2 text-sm text-slate-700">
+              <li><a class="text-teal-700 underline" href="scripts/run_lcia.py">scripts/run_lcia.py</a> - LCIA execution</li>
+              <li><a class="text-teal-700 underline" href="scripts/montecarlo.py">scripts/montecarlo.py</a> - uncertainty analysis</li>
+              <li><a class="text-teal-700 underline" href="scripts/brightway_prepare.py">scripts/brightway_prepare.py</a> - prep utilities</li>
+              <li><a class="text-teal-700 underline" href="scripts/README.md">scripts/README.md</a> - script usage notes</li>
+            </ul>
+          </details>
+        </div>
+      </section>
+
+      <section class="card p-6 md:p-8">
+        <h2 class="text-2xl font-semibold tracking-tight">Use Cases and Practical Application</h2>
+        <div class="mt-5 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+          <article class="rounded-xl border border-slate-200 p-4">
+            <h3 class="text-sm font-semibold">Policy Design</h3>
+            <p class="mt-2 text-sm text-slate-600">Prioritize recycling systems and packaging standards with quantified impact signals.</p>
+          </article>
+          <article class="rounded-xl border border-slate-200 p-4">
+            <h3 class="text-sm font-semibold">Producer Strategy</h3>
+            <p class="mt-2 text-sm text-slate-600">Identify high-impact levers: lightweighting, recycled content, and end-of-life collection.</p>
+          </article>
+          <article class="rounded-xl border border-slate-200 p-4">
+            <h3 class="text-sm font-semibold">Grant/Funder Communication</h3>
+            <p class="mt-2 text-sm text-slate-600">Show transparent methods, uncertainty ranges, and actionable outcomes in one narrative.</p>
+          </article>
+          <article class="rounded-xl border border-slate-200 p-4">
+            <h3 class="text-sm font-semibold">Public Education</h3>
+            <p class="mt-2 text-sm text-slate-600">Translate technical lifecycle results into understandable trade-offs and choices.</p>
+          </article>
+        </div>
+      </section>
+
+      <section id="glossary" class="card p-6 md:p-8">
+        <h2 class="text-2xl font-semibold tracking-tight">Glossary and Acronyms</h2>
+        <div class="mt-4 overflow-x-auto">
+          <table class="w-full min-w-[620px] text-left text-sm">
+            <thead>
+              <tr class="border-b bg-slate-50 text-xs uppercase text-slate-500">
+                <th class="px-3 py-2">Term</th>
+                <th class="px-3 py-2">Full Meaning</th>
+                <th class="px-3 py-2">Simple Explanation</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr class="border-b"><td class="px-3 py-2 font-medium">LCA</td><td class="px-3 py-2">Life Cycle Assessment</td><td class="px-3 py-2">A method to measure environmental impacts from start to end of a product life.</td></tr>
+              <tr class="border-b"><td class="px-3 py-2 font-medium">LCI</td><td class="px-3 py-2">Life Cycle Inventory</td><td class="px-3 py-2">The input data used in an LCA model (materials, energy, transport, waste).</td></tr>
+              <tr class="border-b"><td class="px-3 py-2 font-medium">LCIA</td><td class="px-3 py-2">Life Cycle Impact Assessment</td><td class="px-3 py-2">The step converting inventory data into impact indicators.</td></tr>
+              <tr class="border-b"><td class="px-3 py-2 font-medium">GWP</td><td class="px-3 py-2">Global Warming Potential</td><td class="px-3 py-2">Climate impact indicator, usually in kg CO2-equivalent.</td></tr>
+              <tr class="border-b"><td class="px-3 py-2 font-medium">FU</td><td class="px-3 py-2">Functional Unit</td><td class="px-3 py-2">The common basis of comparison (here: 1 liter consumed).</td></tr>
+              <tr><td class="px-3 py-2 font-medium">MJ</td><td class="px-3 py-2">Megajoule</td><td class="px-3 py-2">A unit of energy.</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+    </main>
+
+    <footer class="mx-auto mt-6 max-w-7xl px-4 pb-10 sm:px-6 lg:px-8">
+      <div class="card p-6 text-center text-sm text-slate-700">
+        <p class="font-medium">Credit: Adetoro Adetayo (Research Lead) and Tomi Abe (Digital Lead).</p>
+        <p class="mt-1">A research project by Susbridge.</p>
+      </div>
+    </footer>
+
+    <script>
+      const DATA = {
+        baseline: {
+          sachet: { gwp: 0.04246, waterL: 12.4, energy: 0.592 },
+          pet: { gwp: 0.08970, waterL: 82.6, energy: 1.912 }
+        },
+        scenarios: [
+          { scenario: "Baseline", product: "Sachet", gwp: 0.04246, note: "Current Lagos default assumptions" },
+          { scenario: "Baseline", product: "PET", gwp: 0.08970, note: "Current Lagos default assumptions" },
+          { scenario: "PET high recycling", product: "PET", gwp: 0.05550, note: "50% recycling scenario" },
+          { scenario: "Sachet high open burn", product: "Sachet", gwp: 0.04627, note: "95% open burn scenario" }
+        ],
+        hotspots: [
+          { stage: "Packaging production", sachet: 38.2, pet: 53.5, color: "#0f766e" },
+          { stage: "Filling energy", sachet: 33.0, pet: 15.6, color: "#d97706" },
+          { stage: "Transport", sachet: 0.1, pet: 0.1, color: "#64748b" },
+          { stage: "End-of-life", sachet: 28.7, pet: 30.8, color: "#be123c" }
+        ],
+        uncertainty: [
+          { metric: "GWP", sachetMean: 0.04641, petMean: 0.08629, sachetRange: "0.03172 - 0.06110", petRange: "0.05922 - 0.11336" },
+          { metric: "Water depletion", sachetMean: 0.01240, petMean: 0.08260, sachetRange: "0.01024 - 0.01457", petRange: "0.06709 - 0.09811" },
+          { metric: "Cumulative energy", sachetMean: 0.628, petMean: 1.948, sachetRange: "0.513 - 0.743", petRange: "1.599 - 2.297" }
+        ]
+      };
+
+      const BASELINE_PARAMS = {
+        sachet: { massKg: 0.006, polymerGwp: 2.7, polymerWater: 1.9, polymerEnergy: 80, recycling: 0.05, mismanaged: 0.75 },
+        pet: { massKg: 0.024, polymerGwp: 2.0, polymerWater: 3.4, polymerEnergy: 75, recycling: 0.15, mismanaged: 0.5 }
+      };
+
+      const C = {
+        fillingGwp: 0.014,
+        transportGwpPerKg: 0.004,
+        openBurnEf: 2.9,
+        fillingWaterM3: 0.001,
+        fillingEnergyMj: 0.072,
+        transportEnergyMj: 0.04,
+        petWaterRecyclingA: 1.2142857143,
+        petWaterRecyclingB: -1.4285714286,
+        petEnergyRecyclingA: 1.2057142857,
+        petEnergyRecyclingB: -1.3714285714
+      };
+
+      const menuBtn = document.getElementById("menuBtn");
+      const mobileMenuModal = document.getElementById("mobileMenuModal");
+      const mobileMenuClose = document.getElementById("mobileMenuClose");
+      menuBtn.addEventListener("click", () => mobileMenuModal.classList.remove("hidden"));
+      mobileMenuClose.addEventListener("click", () => mobileMenuModal.classList.add("hidden"));
+      mobileMenuModal.addEventListener("click", (e) => {
+        if (e.target === mobileMenuModal) mobileMenuModal.classList.add("hidden");
+      });
+      mobileMenuModal.querySelectorAll("a").forEach((a) => {
+        a.addEventListener("click", () => mobileMenuModal.classList.add("hidden"));
+      });
+
+      const modeToggle = document.getElementById("modeToggle");
+      const modeToggleMobile = document.getElementById("modeToggleMobile");
+      function toggleAudienceMode() {
+        const isPlain = document.body.classList.contains("mode-plain");
+        document.body.classList.toggle("mode-plain", !isPlain);
+        document.body.classList.toggle("mode-tech", isPlain);
+        modeToggle.textContent = isPlain ? "Audience Mode: Technical" : "Audience Mode: Plain Language";
+        modeToggleMobile.textContent = isPlain ? "Audience: Technical" : "Audience: Plain";
+      }
+      modeToggle.addEventListener("click", toggleAudienceMode);
+      modeToggleMobile.addEventListener("click", toggleAudienceMode);
+
+      function fillScenarioTable() {
+        const tbody = document.getElementById("scenarioRows");
+        tbody.innerHTML = DATA.scenarios.map((s) => `
+          <tr class="border-b last:border-b-0">
+            <td class="px-3 py-2">${s.scenario}</td>
+            <td class="px-3 py-2">${s.product}</td>
+            <td class="px-3 py-2 num">${s.gwp.toFixed(5)}</td>
+            <td class="px-3 py-2 text-slate-600">${s.note}</td>
+          </tr>
+        `).join("");
+      }
+
+      function fillHotspots() {
+        const wrap = document.getElementById("hotspotList");
+        wrap.innerHTML = DATA.hotspots.map((h) => `
+          <article class="rounded-lg border border-slate-200 p-3">
+            <p class="text-sm font-medium">${h.stage}</p>
+            <div class="mt-2 text-xs text-slate-600">Sachet: ${h.sachet}%</div>
+            <div class="hotspot-track mt-1"><div class="hotspot-fill" style="width:${h.sachet}%;background:${h.color}"></div></div>
+            <div class="mt-2 text-xs text-slate-600">PET: ${h.pet}%</div>
+            <div class="hotspot-track mt-1"><div class="hotspot-fill" style="width:${h.pet}%;background:${h.color}"></div></div>
+          </article>
+        `).join("");
+      }
+
+      const baselineChart = new Chart(document.getElementById("baselineChart"), {
+        type: "bar",
+        data: {
+          labels: ["GWP (kg CO2-eq/L)", "Water (L/L)", "Energy (MJ/L)"],
+          datasets: [
+            { label: "Sachet", data: [0.04246, 12.4, 0.592], backgroundColor: "#0f766e" },
+            { label: "PET", data: [0.08970, 82.6, 1.912], backgroundColor: "#0369a1" }
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          scales: { y: { beginAtZero: true } },
+          plugins: { legend: { position: "bottom" } }
+        }
+      });
+
+      const uncertaintyChart = new Chart(document.getElementById("uncertaintyChart"), {
+        type: "bar",
+        data: {
+          labels: ["GWP", "Water depletion", "Cumulative energy"],
+          datasets: [
+            { label: "Sachet mean", data: [0.04641, 0.01240, 0.628], backgroundColor: "#0f766e" },
+            { label: "PET mean", data: [0.08629, 0.08260, 1.948], backgroundColor: "#0369a1" }
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          scales: { y: { beginAtZero: true } },
+          plugins: { legend: { position: "bottom" } }
+        }
+      });
+
+      const driverLabels = ["Packaging", "Filling energy", "Transport", "End-of-life"];
+      const driverColors = ["#66c2a5", "#fc8d62", "#8da0cb", "#e78ac3"];
+
+      const driverPieSachet = new Chart(document.getElementById("driverPieSachet"), {
+        type: "pie",
+        data: {
+          labels: driverLabels,
+          datasets: [{ data: [34.9, 45.3, 0.1, 19.7], backgroundColor: driverColors }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          layout: { padding: 6 },
+          plugins: { legend: { position: "bottom" } }
+        }
+      });
+
+      const driverPiePet = new Chart(document.getElementById("driverPiePet"), {
+        type: "pie",
+        data: {
+          labels: driverLabels,
+          datasets: [{ data: [55.6, 24.3, 0.3, 19.7], backgroundColor: driverColors }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          layout: { padding: 6 },
+          plugins: { legend: { position: "bottom" } }
+        }
+      });
+
+      function makeHorizontalTwoBarChart(id, labels, values, maxHint, colors) {
+        return new Chart(document.getElementById(id), {
+          type: "bar",
+          data: {
+            labels,
+            datasets: [{ label: "Value", data: values, backgroundColor: colors }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            indexAxis: "y",
+            scales: { x: { beginAtZero: true, suggestedMax: maxHint } },
+            datasets: { bar: { barPercentage: 0.45, categoryPercentage: 0.6 } },
+            plugins: { legend: { display: false } }
+          }
+        });
+      }
+
+      const sensGwpChart = makeHorizontalTwoBarChart(
+        "sensGwpChart",
+        ["Baseline: 0.0863", "50% recycling: 0.0731"],
+        [0.08629, 0.07309],
+        0.12,
+        ["#4c78a8", "#f58518"]
+      );
+      const sensWaterChart = makeHorizontalTwoBarChart(
+        "sensWaterChart",
+        ["Baseline: 82.6 L", "50% recycling: 41.8 L"],
+        [82.6, 41.8],
+        90,
+        ["#54a24b", "#b058a6"]
+      );
+      const sensEnergyChart = makeHorizontalTwoBarChart(
+        "sensEnergyChart",
+        ["Baseline: 0.628 MJ", "20% lighter: 0.532 MJ"],
+        [0.628, 0.532],
+        0.8,
+        ["#e45756", "#72b7b2"]
+      );
+
+      function fillUncertaintyText() {
+        const wrap = document.getElementById("uncertaintyText");
+        wrap.innerHTML = DATA.uncertainty.map((row) => `
+          <div class="rounded-md bg-slate-50 p-2">
+            <span class="font-medium">${row.metric}:</span>
+            Sachet range ${row.sachetRange} | PET range ${row.petRange}
+          </div>
+        `).join("");
+      }
+
+      function computeProduct(product, massMultiplier, recyclingRate, mismanagedRate) {
+        const mass = product.massKg * massMultiplier;
+        const packaging = mass * product.polymerGwp;
+        const filling = C.fillingGwp;
+        const transport = mass * C.transportGwpPerKg;
+        const eol = mass * (mismanagedRate * C.openBurnEf - recyclingRate * product.polymerGwp);
+        const totalGwp = packaging + filling + transport + eol;
+
+        let waterM3 = (mass * product.polymerWater) + C.fillingWaterM3;
+        let energyMj = (mass * product.polymerEnergy) + C.fillingEnergyMj + C.transportEnergyMj;
+
+        if (product === BASELINE_PARAMS.pet) {
+          const waterScale = Math.max(0, C.petWaterRecyclingA + (C.petWaterRecyclingB * recyclingRate));
+          const energyScale = Math.max(0, C.petEnergyRecyclingA + (C.petEnergyRecyclingB * recyclingRate));
+          const petPackWater = BASELINE_PARAMS.pet.massKg * BASELINE_PARAMS.pet.polymerWater * massMultiplier;
+          const petPackEnergy = BASELINE_PARAMS.pet.massKg * BASELINE_PARAMS.pet.polymerEnergy * massMultiplier;
+          waterM3 = C.fillingWaterM3 + (petPackWater * waterScale);
+          energyMj = C.fillingEnergyMj + C.transportEnergyMj + (petPackEnergy * energyScale);
+        }
+
+        return { gwp: totalGwp, waterL: waterM3 * 1000, energy: energyMj };
+      }
+
+      const simClimateChart = new Chart(document.getElementById("simClimateChart"), {
+        type: "bar",
+        data: {
+          labels: ["Sachet", "PET"],
+          datasets: [
+            { label: "GWP (kg CO2-eq/L)", data: [0, 0], backgroundColor: ["#0f766e", "#0369a1"] }
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          scales: { y: { beginAtZero: true, suggestedMax: 0.12 } },
+          plugins: { legend: { display: false } }
+        }
+      });
+
+      const simResourceChart = new Chart(document.getElementById("simResourceChart"), {
+        type: "bar",
+        data: {
+          labels: ["Water use (L/L)", "Energy use (MJ/L)"],
+          datasets: [
+            { label: "Sachet", data: [0, 0], backgroundColor: "#0f766e" },
+            { label: "PET", data: [0, 0], backgroundColor: "#0369a1" }
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          scales: { y: { beginAtZero: true } },
+          plugins: { legend: { position: "bottom" } }
+        }
+      });
+
+      function renderSimulation() {
+        const petRecycle = Number(document.getElementById("petRecycle").value) / 100;
+        const packMass = Number(document.getElementById("packMass").value) / 100;
+        const sachetMis = Number(document.getElementById("sachetMis").value) / 100;
+
+        document.getElementById("petRecycleVal").textContent = Math.round(petRecycle * 100);
+        document.getElementById("packMassVal").textContent = Math.round(packMass * 100);
+        document.getElementById("sachetMisVal").textContent = Math.round(sachetMis * 100);
+
+        const sachet = computeProduct(BASELINE_PARAMS.sachet, packMass, BASELINE_PARAMS.sachet.recycling, sachetMis);
+        const pet = computeProduct(BASELINE_PARAMS.pet, packMass, petRecycle, BASELINE_PARAMS.pet.mismanaged);
+
+        document.getElementById("simSachetGwp").textContent = sachet.gwp.toFixed(4);
+        document.getElementById("simPetGwp").textContent = pet.gwp.toFixed(4);
+        document.getElementById("simSachetRes").textContent = (sachet.waterL + sachet.energy).toFixed(2);
+        document.getElementById("simPetRes").textContent = (pet.waterL + pet.energy).toFixed(2);
+
+        simClimateChart.data.datasets[0].data = [sachet.gwp, pet.gwp];
+        simClimateChart.update();
+
+        simResourceChart.data.datasets[0].data = [sachet.waterL, sachet.energy];
+        simResourceChart.data.datasets[1].data = [pet.waterL, pet.energy];
+        simResourceChart.update();
+
+        const bullets = [];
+        if (sachet.gwp < pet.gwp) bullets.push("Sachet remains lower on climate impact in this scenario.");
+        else bullets.push("PET becomes lower on climate impact in this scenario.");
+
+        if (petRecycle >= 0.4) bullets.push("High PET recycling materially improves PET water and energy profile.");
+        if (packMass < 1) bullets.push("Lower packaging mass improves both systems and is a strong cross-cutting lever.");
+        if (sachetMis > 0.8) bullets.push("High unmanaged sachet waste increases end-of-life emissions and should be targeted by collection policy.");
+        if (bullets.length < 3) bullets.push("Use this output to prioritize interventions with the largest reduction potential per effort.");
+
+        const climateWinner = sachet.gwp < pet.gwp ? "Sachet" : "PET";
+        const resourceWinner = (sachet.waterL + sachet.energy) < (pet.waterL + pet.energy) ? "Sachet" : "PET";
+        let bestLever = "Reduce packaging mass across both systems.";
+        if (petRecycle >= 0.4) bestLever = "Scale PET collection and recycling.";
+        if (sachetMis > 0.8) bestLever = "Improve sachet collection to cut unmanaged burning.";
+
+        document.getElementById("simClimateWinner").textContent = `${climateWinner} has lower GWP now.`;
+        document.getElementById("simResourceWinner").textContent = `${resourceWinner} has lower water + energy burden.`;
+        document.getElementById("simBestLever").textContent = bestLever;
+        document.getElementById("decisionBullets").innerHTML = bullets.map((b) => `<li>${b}</li>`).join("");
+      }
+
+      ["petRecycle", "packMass", "sachetMis"].forEach((id) => {
+        document.getElementById(id).addEventListener("input", renderSimulation);
+      });
+
+      function setupActiveNav() {
+        const links = Array.from(document.querySelectorAll(".nav-link"));
+        const sections = links.map((l) => document.querySelector(l.getAttribute("href"))).filter(Boolean);
+        const observer = new IntersectionObserver((entries) => {
+          entries.forEach((entry) => {
+            if (entry.isIntersecting) {
+              links.forEach((l) => l.classList.toggle("active", l.getAttribute("href") === `#${entry.target.id}`));
+            }
+          });
+        }, { rootMargin: "-35% 0px -55% 0px", threshold: 0 });
+        sections.forEach((s) => observer.observe(s));
+      }
+
+      fillScenarioTable();
+      fillHotspots();
+      fillUncertaintyText();
+      renderSimulation();
+      setupActiveNav();
+    </script>
+  </body>
+</html>

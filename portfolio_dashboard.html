@@ -1,0 +1,288 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>LCA Portfolio Mini Dashboard</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+      :root {
+        --background: 36 39% 98%;
+        --foreground: 222 47% 11%;
+        --card: 0 0% 100%;
+        --card-foreground: 222 47% 11%;
+        --muted: 210 40% 96%;
+        --muted-foreground: 215 16% 47%;
+        --border: 214 32% 91%;
+        --primary: 197 37% 24%;
+        --primary-foreground: 0 0% 98%;
+        --accent: 40 90% 95%;
+        --radius: 0.8rem;
+      }
+      body {
+        font-family: "Geist", ui-sans-serif, system-ui, -apple-system, Segoe UI, sans-serif;
+        background: radial-gradient(circle at top right, #fff6e6 0%, #fcfcfb 45%, #f8fafc 100%);
+        color: hsl(var(--foreground));
+      }
+      .card {
+        border: 1px solid hsl(var(--border));
+        background: hsl(var(--card));
+        border-radius: var(--radius);
+        box-shadow: 0 1px 2px rgba(16, 24, 40, 0.06);
+      }
+      .kpi {
+        font-variant-numeric: tabular-nums;
+      }
+      .bar {
+        height: 10px;
+        border-radius: 999px;
+      }
+    </style>
+  </head>
+  <body class="min-h-screen">
+    <main class="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+      <section class="card p-6">
+        <div class="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+          <div>
+            <p class="text-xs uppercase tracking-[0.18em] text-slate-500">Portfolio Prototype</p>
+            <h1 class="mt-2 text-3xl font-semibold tracking-tight text-slate-900">Sachet vs PET LCA Scenario Dashboard</h1>
+            <p class="mt-2 max-w-3xl text-sm text-slate-600">
+              Interactive mini-dashboard using your project assumptions and baseline results (functional unit: 1 L consumed).
+            </p>
+          </div>
+          <div class="rounded-full border border-slate-200 bg-slate-50 px-4 py-1 text-xs text-slate-600">
+            Data source: results/*.csv + documentation assumptions
+          </div>
+        </div>
+      </section>
+
+      <section class="mt-6 grid gap-6 lg:grid-cols-3">
+        <article class="card p-5">
+          <label for="petRecycle" class="text-sm font-medium text-slate-800">PET recycling rate (%)</label>
+          <input id="petRecycle" type="range" min="0" max="80" step="1" value="15" class="mt-3 w-full" />
+          <div class="mt-2 text-sm text-slate-600"><span id="petRecycleVal" class="kpi font-semibold text-slate-900">15</span>%</div>
+          <p class="mt-2 text-xs text-slate-500">Affects PET end-of-life credit and packaging virgin-content burden.</p>
+        </article>
+
+        <article class="card p-5">
+          <label for="packMass" class="text-sm font-medium text-slate-800">Packaging mass multiplier (%)</label>
+          <input id="packMass" type="range" min="70" max="130" step="1" value="100" class="mt-3 w-full" />
+          <div class="mt-2 text-sm text-slate-600"><span id="packMassVal" class="kpi font-semibold text-slate-900">100</span>% of baseline</div>
+          <p class="mt-2 text-xs text-slate-500">Applies to both products (lightweighting or heavier packaging).</p>
+        </article>
+
+        <article class="card p-5">
+          <label for="sachetMis" class="text-sm font-medium text-slate-800">Sachet mismanaged/open-burn rate (%)</label>
+          <input id="sachetMis" type="range" min="20" max="95" step="1" value="75" class="mt-3 w-full" />
+          <div class="mt-2 text-sm text-slate-600"><span id="sachetMisVal" class="kpi font-semibold text-slate-900">75</span>%</div>
+          <p class="mt-2 text-xs text-slate-500">Directly changes sachet end-of-life emissions.</p>
+        </article>
+      </section>
+
+      <section class="mt-6 grid gap-6 lg:grid-cols-2">
+        <article class="card p-6">
+          <div class="flex items-center justify-between">
+            <h2 class="text-lg font-semibold text-slate-900">Sachet</h2>
+            <span class="rounded-full bg-emerald-50 px-3 py-1 text-xs font-medium text-emerald-700">Baseline anchored</span>
+          </div>
+          <div class="mt-5 grid gap-4 sm:grid-cols-3">
+            <div class="rounded-lg border border-slate-200 p-3">
+              <p class="text-xs text-slate-500">GWP</p>
+              <p id="sachetGwp" class="kpi mt-1 text-xl font-semibold">0.0000</p>
+              <p class="text-xs text-slate-500">kg CO2-eq/L</p>
+            </div>
+            <div class="rounded-lg border border-slate-200 p-3">
+              <p class="text-xs text-slate-500">Water depletion</p>
+              <p id="sachetWater" class="kpi mt-1 text-xl font-semibold">0.0</p>
+              <p class="text-xs text-slate-500">L per L</p>
+            </div>
+            <div class="rounded-lg border border-slate-200 p-3">
+              <p class="text-xs text-slate-500">Cumulative energy</p>
+              <p id="sachetEnergy" class="kpi mt-1 text-xl font-semibold">0.000</p>
+              <p class="text-xs text-slate-500">MJ/L</p>
+            </div>
+          </div>
+          <div class="mt-5 space-y-3">
+            <div>
+              <div class="mb-1 flex justify-between text-xs text-slate-600"><span>Packaging production</span><span id="sachetPackPct" class="kpi">0%</span></div>
+              <div id="sachetPackBar" class="bar bg-slate-300"></div>
+            </div>
+            <div>
+              <div class="mb-1 flex justify-between text-xs text-slate-600"><span>Filling energy</span><span id="sachetFillPct" class="kpi">0%</span></div>
+              <div id="sachetFillBar" class="bar bg-slate-300"></div>
+            </div>
+            <div>
+              <div class="mb-1 flex justify-between text-xs text-slate-600"><span>Transport</span><span id="sachetTransportPct" class="kpi">0%</span></div>
+              <div id="sachetTransportBar" class="bar bg-slate-300"></div>
+            </div>
+            <div>
+              <div class="mb-1 flex justify-between text-xs text-slate-600"><span>End of life</span><span id="sachetEolPct" class="kpi">0%</span></div>
+              <div id="sachetEolBar" class="bar bg-slate-300"></div>
+            </div>
+          </div>
+        </article>
+
+        <article class="card p-6">
+          <div class="flex items-center justify-between">
+            <h2 class="text-lg font-semibold text-slate-900">PET bottle</h2>
+            <span class="rounded-full bg-sky-50 px-3 py-1 text-xs font-medium text-sky-700">Policy lever: recycling</span>
+          </div>
+          <div class="mt-5 grid gap-4 sm:grid-cols-3">
+            <div class="rounded-lg border border-slate-200 p-3">
+              <p class="text-xs text-slate-500">GWP</p>
+              <p id="petGwp" class="kpi mt-1 text-xl font-semibold">0.0000</p>
+              <p class="text-xs text-slate-500">kg CO2-eq/L</p>
+            </div>
+            <div class="rounded-lg border border-slate-200 p-3">
+              <p class="text-xs text-slate-500">Water depletion</p>
+              <p id="petWater" class="kpi mt-1 text-xl font-semibold">0.0</p>
+              <p class="text-xs text-slate-500">L per L</p>
+            </div>
+            <div class="rounded-lg border border-slate-200 p-3">
+              <p class="text-xs text-slate-500">Cumulative energy</p>
+              <p id="petEnergy" class="kpi mt-1 text-xl font-semibold">0.000</p>
+              <p class="text-xs text-slate-500">MJ/L</p>
+            </div>
+          </div>
+          <div class="mt-5 space-y-3">
+            <div>
+              <div class="mb-1 flex justify-between text-xs text-slate-600"><span>Packaging production</span><span id="petPackPct" class="kpi">0%</span></div>
+              <div id="petPackBar" class="bar bg-slate-300"></div>
+            </div>
+            <div>
+              <div class="mb-1 flex justify-between text-xs text-slate-600"><span>Filling energy</span><span id="petFillPct" class="kpi">0%</span></div>
+              <div id="petFillBar" class="bar bg-slate-300"></div>
+            </div>
+            <div>
+              <div class="mb-1 flex justify-between text-xs text-slate-600"><span>Transport</span><span id="petTransportPct" class="kpi">0%</span></div>
+              <div id="petTransportBar" class="bar bg-slate-300"></div>
+            </div>
+            <div>
+              <div class="mb-1 flex justify-between text-xs text-slate-600"><span>End of life</span><span id="petEolPct" class="kpi">0%</span></div>
+              <div id="petEolBar" class="bar bg-slate-300"></div>
+            </div>
+          </div>
+        </article>
+      </section>
+
+      <section class="mt-6 card p-6">
+        <h3 class="text-base font-semibold text-slate-900">Notes on assumptions used in this prototype</h3>
+        <ul class="mt-3 list-disc space-y-1 pl-5 text-sm text-slate-600">
+          <li>Baseline masses: sachet 0.006 kg/L, PET 0.024 kg/L.</li>
+          <li>GWP factors: LDPE 2.7 kg CO2-eq/kg, PET 2.0 kg CO2-eq/kg, open-burn 2.9 kg CO2-eq/kg.</li>
+          <li>Water factors: LDPE 1.9 m3/kg, PET 3.4 m3/kg plus 0.001 m3 filling water per L.</li>
+          <li>Energy factors: LDPE 80 MJ/kg, PET 75 MJ/kg, plus filling 0.072 MJ/L and transport 0.04 MJ/L.</li>
+        </ul>
+      </section>
+    </main>
+
+    <script>
+      const BASELINE = {
+        sachet: { massKg: 0.006, polymerGwp: 2.7, polymerWater: 1.9, polymerEnergy: 80, recycling: 0.05, mismanaged: 0.75 },
+        pet: { massKg: 0.024, polymerGwp: 2.0, polymerWater: 3.4, polymerEnergy: 75, recycling: 0.15, mismanaged: 0.5 }
+      };
+
+      const CONSTANTS = {
+        fillingGwp: 0.014,
+        transportGwpPerKg: 0.004,
+        openBurnEf: 2.9,
+        fillingWaterM3: 0.001,
+        fillingEnergyMj: 0.072,
+        transportEnergyMj: 0.04,
+        petWaterRecyclingA: 1.2142857143,
+        petWaterRecyclingB: -1.4285714286,
+        petEnergyRecyclingA: 1.2057142857,
+        petEnergyRecyclingB: -1.3714285714
+      };
+
+      function computeProduct(product, massMultiplier, recyclingRate, mismanagedRate) {
+        const mass = product.massKg * massMultiplier;
+        const packaging = mass * product.polymerGwp;
+        const filling = CONSTANTS.fillingGwp;
+        const transport = mass * CONSTANTS.transportGwpPerKg;
+        const eol = mass * (mismanagedRate * CONSTANTS.openBurnEf - recyclingRate * product.polymerGwp);
+        const totalGwp = packaging + filling + transport + eol;
+
+        let waterM3 = (mass * product.polymerWater) + CONSTANTS.fillingWaterM3;
+        let energyMj = (mass * product.polymerEnergy) + CONSTANTS.fillingEnergyMj + CONSTANTS.transportEnergyMj;
+
+        if (product === BASELINE.pet) {
+          const waterScale = Math.max(0, CONSTANTS.petWaterRecyclingA + (CONSTANTS.petWaterRecyclingB * recyclingRate));
+          const energyScale = Math.max(0, CONSTANTS.petEnergyRecyclingA + (CONSTANTS.petEnergyRecyclingB * recyclingRate));
+          const petPackagingWaterM3 = BASELINE.pet.massKg * BASELINE.pet.polymerWater * massMultiplier;
+          const petPackagingEnergyMj = BASELINE.pet.massKg * BASELINE.pet.polymerEnergy * massMultiplier;
+          waterM3 = CONSTANTS.fillingWaterM3 + (petPackagingWaterM3 * waterScale);
+          energyMj = CONSTANTS.fillingEnergyMj + CONSTANTS.transportEnergyMj + (petPackagingEnergyMj * energyScale);
+        }
+
+        return {
+          totalGwp,
+          waterL: waterM3 * 1000,
+          energyMj,
+          shares: {
+            packaging: Math.max(0, packaging / totalGwp),
+            filling: Math.max(0, filling / totalGwp),
+            transport: Math.max(0, transport / totalGwp),
+            eol: Math.max(0, eol / totalGwp)
+          }
+        };
+      }
+
+      function pct(v) {
+        return `${(v * 100).toFixed(1)}%`;
+      }
+
+      function setBar(id, pctValue, color) {
+        const bar = document.getElementById(id);
+        bar.style.width = `${Math.min(100, Math.max(0, pctValue * 100))}%`;
+        bar.style.background = color;
+      }
+
+      function renderProduct(prefix, values) {
+        document.getElementById(`${prefix}Gwp`).textContent = values.totalGwp.toFixed(4);
+        document.getElementById(`${prefix}Water`).textContent = values.waterL.toFixed(1);
+        document.getElementById(`${prefix}Energy`).textContent = values.energyMj.toFixed(3);
+
+        document.getElementById(`${prefix}PackPct`).textContent = pct(values.shares.packaging);
+        document.getElementById(`${prefix}FillPct`).textContent = pct(values.shares.filling);
+        document.getElementById(`${prefix}TransportPct`).textContent = pct(values.shares.transport);
+        document.getElementById(`${prefix}EolPct`).textContent = pct(values.shares.eol);
+      }
+
+      function render() {
+        const petRecycle = Number(document.getElementById("petRecycle").value) / 100;
+        const packMass = Number(document.getElementById("packMass").value) / 100;
+        const sachetMis = Number(document.getElementById("sachetMis").value) / 100;
+
+        document.getElementById("petRecycleVal").textContent = Math.round(petRecycle * 100);
+        document.getElementById("packMassVal").textContent = Math.round(packMass * 100);
+        document.getElementById("sachetMisVal").textContent = Math.round(sachetMis * 100);
+
+        const sachet = computeProduct(BASELINE.sachet, packMass, BASELINE.sachet.recycling, sachetMis);
+        const pet = computeProduct(BASELINE.pet, packMass, petRecycle, BASELINE.pet.mismanaged);
+
+        renderProduct("sachet", sachet);
+        renderProduct("pet", pet);
+
+        setBar("sachetPackBar", sachet.shares.packaging, "#10b981");
+        setBar("sachetFillBar", sachet.shares.filling, "#f59e0b");
+        setBar("sachetTransportBar", sachet.shares.transport, "#64748b");
+        setBar("sachetEolBar", sachet.shares.eol, "#ec4899");
+
+        setBar("petPackBar", pet.shares.packaging, "#0ea5e9");
+        setBar("petFillBar", pet.shares.filling, "#f97316");
+        setBar("petTransportBar", pet.shares.transport, "#64748b");
+        setBar("petEolBar", pet.shares.eol, "#a855f7");
+      }
+
+      ["petRecycle", "packMass", "sachetMis"].forEach((id) => {
+        document.getElementById(id).addEventListener("input", render);
+      });
+
+      render();
+    </script>
+  </body>
+</html>
